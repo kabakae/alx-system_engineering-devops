@@ -1,2 +1,2 @@
 #!/bin/bashi
-echo hello MyUser
+echo hello $USER
