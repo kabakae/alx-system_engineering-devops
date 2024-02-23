@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#Displays alist of currency running processes containing the bash keyword.
+# shellcheck disable=SC2009
+
+ps -aux | grep bash
