@@ -1,34 +1,17 @@
-#!/usr/bin/env bash
-# Configures a new Ubuntu machine by installing
-# Nginx where it should be listening on port 80
-# Serve a page that would return a Hello World string
+#!/bin/bash
 
-set -euo pipefail
+# Update apt package index
+apt-get update -y
 
-echo -e "Updating and installing Nginx.\n"
-sudo apt-get update -y -qq && \
-sudo apt-get install nginx -y
+# Install nginx
+apt-get install nginx -y
 
-echo -e "\nSetting up some minor stuff.\n"
-
-# Start nginx service
-sudo systemctl start nginx
-
-# Allow nginx on firewall
-sudo ufw allow 'Nginx HTTP'
-
-# Give the user ownership to website files for easy editing
-sudo chown -R "$USER":"$USER" /var/www/html
-sudo chmod -R 755 /var/www
-
-# Backup default index
-sudo cp /var/www/html/index.nginx-debian.html /var/www/html/index.nginx-debian.html.bckp
-
-# Create new index
-echo -e "Hello World!" | sudo dd status=none of=/var/www/html/index.nginx-debian.html
+# Check if nginx.conf already contains the desired configuration
+if ! grep -q "location / {" /etc/nginx/nginx.conf; then
+    # Add configuration to nginx.conf
+    sed -i '/http {/a \\tserver {\n\t\tlocation / {\n\t\t\techo "Hello World!";\n\t\t}\n\t}' /etc/nginx/nginx.conf
+fi
 
 # Restart nginx
-sudo systemctl restart nginx
-
-echo -e "\nCompleted. ✅\n"
+service nginx restart
 
