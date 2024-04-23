@@ -14,4 +14,3 @@ fi
 
 # Restart nginx
 service nginx restart
-
