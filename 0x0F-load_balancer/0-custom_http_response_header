@@ -1,0 +1,23 @@
+# File: 0-custom_http_response_header
+
+# Define a server block to listen on port 80
+server {
+    # Listen on port 80
+    listen 80;
+
+    # Define the server name (replace example.com with your domain)
+    server_name example.com;
+
+    # Define the location block for handling requests
+    location / {
+        # Set the HTTP status code to 200
+        return 200 'Hello, World!';
+
+        # Add a content-type header
+        add_header Content-Type text/plain;
+
+        # Add a custom response header
+        add_header X-Custom-Header "Hello, World!";
+    }
+}
+
