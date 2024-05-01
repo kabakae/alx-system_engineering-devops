@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+
 # File: 0-custom_http_response_header
 
 # Define a server block to listen on port 80
