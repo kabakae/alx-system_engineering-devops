@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# print domains and subdomains
+
+print_domain_subdomain () {
+    dig "S1" | grep -A1 'ANSWER SECTION:' | sed -r "s/S1./S2/g" |awk -f" " ' NR==2 { print "The subdomain "S1" is a "S4" record and points to "s5}'
+}
+if ["s#" -eq 2]
+then
+    print_domain_subdomain "www.S1" "www"
+    print_domain_subdomain
+
+    print_domain_subdomain
+    print_domain_subdomain
+f1
