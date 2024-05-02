@@ -7,9 +7,11 @@ print_domain_subdomain () {
 }
 if ["s#" -eq 2]
 then
+    print_domain_subdomain "s2.s1" "s2"
+else
     print_domain_subdomain "www.S1" "www"
-    print_domain_subdomain
+    print_domain_subdomain "lb-01.S1" "lb-01"
 
-    print_domain_subdomain
-    print_domain_subdomain
+    print_domain_subdomain "web-01.S1" "web-01"
+    print_domain_subdomain "web-02.S1" "web-02"
 f1
