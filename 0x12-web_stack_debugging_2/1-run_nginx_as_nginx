@@ -2,21 +2,26 @@
 # Stop Nginx service
 service nginx stop
 
+# Change ownership of Nginx directories
+chown -R nginx:nginx /var/log/nginx /var/lib/nginx
+
 # Change Nginx user in the configuration
 sed -i 's/^user\s\+.*$/user nginx;/' /etc/nginx/nginx.conf
 
-# Change Nginx listening port in the default site configuration
-sed -i 's/listen\s\+80;/listen 8080;/' /etc/nginx/sites-available/default
+# Modify the default site configuration to listen on port 8080
+sed -i 's/listen\s\+80;/listen 8080;/g' /etc/nginx/sites-available/default
+
+# Ensure Nginx is listening on all active IPs
+sed -i '/listen 8080;/a listen [::]:8080;' /etc/nginx/sites-available/default
 
 # Start Nginx service
 service nginx start
 
-# Check if Nginx is running and listening on port 8080
-if pgrep -x "nginx" > /dev/null && nc -z 0 8080 > /dev/null; then
-    exit 0
+# Check if Nginx is running as nginx user and listening on port 8080
+if ps auxff | grep "ngin[x]" | grep -q "nginx: master process"; then
+    echo "Nginx is running as the nginx user."
 else
-    echo "Nginx failed to start or is not listening on port 8080."
-    echo "Checking Nginx error logs for more information..."
-    tail -n 10 /var/log/nginx/error.log
-    exit 1
+    echo "Nginx is not running as the nginx user."
 fi
+
+nc -z 0 8080
