@@ -1,27 +1,28 @@
 #!/usr/bin/env bash
-# Stop Nginx service
-service nginx stop
-
-# Change ownership of Nginx directories
-chown -R nginx:nginx /var/log/nginx /var/lib/nginx
-
-# Change Nginx user in the configuration
-sed -i 's/^user\s\+.*$/user nginx;/' /etc/nginx/nginx.conf
-
-# Modify the default site configuration to listen on port 8080
-sed -i 's/listen\s\+80;/listen 8080;/g' /etc/nginx/sites-available/default
-
-# Ensure Nginx is listening on all active IPs
-sed -i '/listen 8080;/a listen [::]:8080;' /etc/nginx/sites-available/default
-
-# Start Nginx service
-service nginx start
-
-# Check if Nginx is running as nginx user and listening on port 8080
-if pgrep -x "nginx" > /dev/null; then
-    echo "Nginx is running as the nginx user."
-else
-    echo "Nginx is not running as the nginx user."
+# Check if script is run as root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
 fi
 
-nc -z 0 8080
+# Set Nginx to run as the nginx user
+sed -i 's/^user .*;$/user nginx;/' /etc/nginx/nginx.conf
+
+# Configure Nginx to listen on all active IPs on port 8080
+sed -i 's/^ *listen .*;$/    listen 8080 default_server;/' /etc/nginx/sites-available/default
+
+# Restart Nginx and check if the restart was successful
+service nginx restart
+if [ $? -ne 0 ]; then
+    echo "Failed to restart Nginx"
+    exit 1
+fi
+
+# Prevent attempting to remove Nginx if it's not installed
+if ! dpkg -l nginx >/dev/null 2>&1; then
+    echo "Nginx is not installed, skipping removal"
+    exit 0
+fi
+
+# Prevent using apt-get remove
+dpkg --purge --force-all nginx

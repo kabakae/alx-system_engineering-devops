@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# explains what 
+sed -i 's/^user .*$/user nginx/' /etc/nginx/nginx.conf
+sed -i 's/^ *listen .*$/    listen 8080 default_server/' /etc/nginx/sites-available/default
+service nginx restart
