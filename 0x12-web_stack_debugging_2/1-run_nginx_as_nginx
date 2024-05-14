@@ -18,7 +18,7 @@ sed -i '/listen 8080;/a listen [::]:8080;' /etc/nginx/sites-available/default
 service nginx start
 
 # Check if Nginx is running as nginx user and listening on port 8080
-if ps auxff | grep "ngin[x]" | grep -q "nginx: master process"; then
+if pgrep -x "nginx" > /dev/null; then
     echo "Nginx is running as the nginx user."
 else
     echo "Nginx is not running as the nginx user."
