@@ -11,14 +11,12 @@ sed -i 's/listen\s\+80;/listen 8080;/' /etc/nginx/sites-available/default
 # Start Nginx service
 service nginx start
 
-# Check Nginx processes
-if pgrep -x "nginx" > /dev/null; then
-    echo "Nginx processes:"
-    pgrep -l "nginx"
+# Check if Nginx is running and listening on port 8080
+if pgrep -x "nginx" > /dev/null && nc -z 0 8080 > /dev/null; then
+    exit 0
 else
-    echo "Nginx is not running."
+    echo "Nginx failed to start or is not listening on port 8080."
+    echo "Checking Nginx error logs for more information..."
+    tail -n 10 /var/log/nginx/error.log
+    exit 1
 fi
-
-# Check if Nginx is listening on port 8080
-nc -z 0 8080
-
