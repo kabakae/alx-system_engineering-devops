@@ -1,57 +1,85 @@
 #!/usr/bin/env bash
 # Script to configure Nginx to run as nginx user and listen on port 8080
 
-# Function to check if a process is running
-check_process() {
-    local process_name="$1"
-    if pgrep -x "$process_name" >/dev/null; then
-        echo "$process_name is running."
-    else
-        echo "Error: $process_name is not running."
-        exit 1
-    fi
+# Function to check if the last command executed successfully
+check_success() {
+    local action="$1"
+    echo "$action succeeded."
 }
 
-# Function to check if a port is listening
-check_port() {
-    local port="$1"
-    if nc -z 127.0.0.1 "$port"; then
-        echo "Port $port is listening."
-    else
-        echo "Error: Port $port is not listening."
-        exit 1
-    fi
+check_failure() {
+    local action="$1"
+    echo "Error: $action failed."
+    exit 1
 }
 
 # Stop nginx service if it's running
 echo "Stopping Nginx service..."
-sudo service nginx stop
+if sudo service nginx stop; then
+    check_success "Stopping Nginx service"
+else
+    check_failure "Stopping Nginx service"
+fi
 
 # Modify nginx.conf to run nginx as nginx user
 echo "Modifying /etc/nginx/nginx.conf to run as nginx user..."
-sudo sed -i 's/^user\s*;/user nginx nginx;/' /etc/nginx/nginx.conf
+if sudo sed -i 's/^user\s*;/user nginx nginx;/' /etc/nginx/nginx.conf; then
+    check_success "Modifying /etc/nginx/nginx.conf"
+else
+    check_failure "Modifying /etc/nginx/nginx.conf"
+fi
 
 # Update the default site config to listen on port 8080
 echo "Updating /etc/nginx/sites-enabled/default to listen on port 8080..."
-sudo sed -i 's/listen \[::\]:80 default_server;/listen [::]:8080 default_server;/' /etc/nginx/sites-enabled/default
-sudo sed -i 's/listen 80 default_server;/listen 8080 default_server;/' /etc/nginx/sites-enabled/default
+if sudo sed -i 's/listen \[::\]:80 default_server;/listen [::]:8080 default_server;/' /etc/nginx/sites-enabled/default && \
+   sudo sed -i 's/listen 80 default_server;/listen 8080 default_server;/' /etc/nginx/sites-enabled/default; then
+    check_success "Updating /etc/nginx/sites-enabled/default"
+else
+    check_failure "Updating /etc/nginx/sites-enabled/default"
+fi
 
 # Change ownership of necessary files and folders to nginx user
 echo "Changing ownership of Nginx directories..."
-sudo chown -R nginx:nginx /var/log/nginx /var/lib/nginx /etc/nginx
+if sudo chown -R nginx:nginx /var/log/nginx /var/lib/nginx /etc/nginx; then
+    check_success "Changing ownership of Nginx directories"
+else
+    check_failure "Changing ownership of Nginx directories"
+fi
 
 # Start nginx service
 echo "Starting Nginx service..."
-sudo service nginx start
+if sudo service nginx start; then
+    check_success "Starting Nginx service"
+else
+    check_failure "Starting Nginx service"
+fi
 
 # Wait for Nginx to start
+echo "Waiting for Nginx to start..."
 sleep 3
 
-# Check if Nginx processes are running
-check_process "nginx: master process"
-check_process "nginx: worker process"
+# Verify if nginx is running as nginx user
+echo "Verifying Nginx processes are running as nginx user..."
+if pgrep -u nginx -f 'nginx: master process' > /dev/null; then
+    check_success "Nginx master process is running"
+else
+    check_failure "Nginx master process is not running"
+fi
 
-# Check if Nginx is listening on port 8080
-check_port 8080
+if pgrep -u nginx -f 'nginx: worker process' > /dev/null; then
+    check_success "Nginx worker process is running"
+else
+    check_failure "Nginx worker process is not running"
+fi
+
+# Verify if nginx is listening on port 8080
+echo "Verifying Nginx is listening on port 8080..."
+if nc -z 127.0.0.1 8080; then
+    echo "Nginx is listening on port 8080"
+else
+    echo "Nginx is not listening on port 8080"
+    exit 1
+fi
 
 echo "Nginx configuration and setup completed successfully."
+
