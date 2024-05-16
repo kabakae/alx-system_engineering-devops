@@ -2,12 +2,6 @@
 # Script to configure Nginx to run as nginx user and listen on port 8080
 
 # Function to check if the last command executed successfully
-check_success() {
-    if [ $? -ne 0 ]; then
-        echo "Error: $1"
-        exit 1
-    fi
-}
 
 # Stop nginx service if it's running
 echo "Stopping Nginx service..."
@@ -37,15 +31,14 @@ check_success "Failed to start Nginx service"
 
 # Verify if nginx is running as nginx user
 echo "Verifying Nginx processes are running as nginx user..."
-ps aux | grep 'nginx: master process' | grep -v grep
+pgrep -u nginx -f 'nginx: master process' > /dev/null
 check_success "Nginx master process is not running"
-ps aux | grep 'nginx: worker process' | grep -v grep
+pgrep -u nginx -f 'nginx: worker process' > /dev/null
 check_success "Nginx worker process is not running"
 
 # Verify if nginx is listening on port 8080
 echo "Verifying Nginx is listening on port 8080..."
-nc -z 127.0.0.1 8080
-if [ $? -eq 0 ]; then
+if nc -z 127.0.0.1 8080; then
     echo "Nginx is listening on port 8080"
 else
     echo "Nginx is not listening on port 8080"
