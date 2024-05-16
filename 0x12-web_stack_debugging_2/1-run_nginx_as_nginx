@@ -1,39 +1,55 @@
 #!/usr/bin/env bash
-# Check if the script is run as root
-if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root"
+# Script to configure Nginx to run as nginx user and listen on port 8080
+
+# Function to check if the last command executed successfully
+check_success() {
+    if [ $? -ne 0 ]; then
+        echo "Error: $1"
+        exit 1
+    fi
+}
+
+# Stop nginx service if it's running
+echo "Stopping Nginx service..."
+sudo service nginx stop
+check_success "Failed to stop Nginx service"
+
+# Modify nginx.conf to run nginx as nginx user
+echo "Modifying /etc/nginx/nginx.conf to run as nginx user..."
+sudo sed -i 's/^user\s*;/user nginx nginx;/' /etc/nginx/nginx.conf
+check_success "Failed to modify /etc/nginx/nginx.conf"
+
+# Update the default site config to listen on port 8080
+echo "Updating /etc/nginx/sites-enabled/default to listen on port 8080..."
+sudo sed -i 's/listen \[::\]:80 default_server;/listen [::]:8080 default_server;/' /etc/nginx/sites-enabled/default
+sudo sed -i 's/listen 80 default_server;/listen 8080 default_server;/' /etc/nginx/sites-enabled/default
+check_success "Failed to update /etc/nginx/sites-enabled/default"
+
+# Change ownership of necessary files and folders to nginx user
+echo "Changing ownership of Nginx directories..."
+sudo chown -R nginx:nginx /var/log/nginx /var/lib/nginx /etc/nginx
+check_success "Failed to change ownership of Nginx directories"
+
+# Start nginx service
+echo "Starting Nginx service..."
+sudo service nginx start
+check_success "Failed to start Nginx service"
+
+# Verify if nginx is running as nginx user
+echo "Verifying Nginx processes are running as nginx user..."
+ps aux | grep 'nginx: master process' | grep -v grep
+check_success "Nginx master process is not running"
+ps aux | grep 'nginx: worker process' | grep -v grep
+check_success "Nginx worker process is not running"
+
+# Verify if nginx is listening on port 8080
+echo "Verifying Nginx is listening on port 8080..."
+nc -z 127.0.0.1 8080
+if [ $? -eq 0 ]; then
+    echo "Nginx is listening on port 8080"
+else
+    echo "Nginx is not listening on port 8080"
     exit 1
 fi
 
-# Set Nginx to run as the nginx user
-if ! sed -i 's/^user .*;$/user nginx;/' /etc/nginx/nginx.conf; then
-    echo "Failed to update nginx.conf to run as nginx user"
-    exit 1
-fi
-
-# Configure Nginx to listen on all active IPs on port 8080
-if ! sed -i 's/^ *listen .*;$/    listen 8080 default_server;/' /etc/nginx/sites-available/default; then
-    echo "Failed to update the listen port in default site configuration"
-    exit 1
-fi
-
-# Restart Nginx and check if the restart was successful
-if ! service nginx restart; then
-    echo "Failed to restart Nginx"
-    exit 1
-fi
-
-# Check if Nginx is installed
-if ! dpkg-query -W -f='${Status}' nginx 2>/dev/null | grep -q "ok installed"; then
-    echo "Nginx is not installed, skipping removal"
-    exit 0
-fi
-
-# Remove Nginx using apt-get remove
-if ! apt-get remove -y nginx; then
-    echo "Failed to remove Nginx"
-    exit 1
-fi
-
-echo "Nginx configuration updated, service restarted, and Nginx removed successfully (if it was installed)"
-exit 0
+echo "Nginx configuration and setup completed successfully."
