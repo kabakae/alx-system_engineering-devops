@@ -1,48 +1,57 @@
 #!/usr/bin/env bash
 # Script to configure Nginx to run as nginx user and listen on port 8080
 
-# Function to check if the last command executed successfully
+# Function to check if a process is running
+check_process() {
+    local process_name="$1"
+    if pgrep -x "$process_name" >/dev/null; then
+        echo "$process_name is running."
+    else
+        echo "Error: $process_name is not running."
+        exit 1
+    fi
+}
+
+# Function to check if a port is listening
+check_port() {
+    local port="$1"
+    if nc -z 127.0.0.1 "$port"; then
+        echo "Port $port is listening."
+    else
+        echo "Error: Port $port is not listening."
+        exit 1
+    fi
+}
 
 # Stop nginx service if it's running
 echo "Stopping Nginx service..."
 sudo service nginx stop
-check_success "Failed to stop Nginx service"
 
 # Modify nginx.conf to run nginx as nginx user
 echo "Modifying /etc/nginx/nginx.conf to run as nginx user..."
 sudo sed -i 's/^user\s*;/user nginx nginx;/' /etc/nginx/nginx.conf
-check_success "Failed to modify /etc/nginx/nginx.conf"
 
 # Update the default site config to listen on port 8080
 echo "Updating /etc/nginx/sites-enabled/default to listen on port 8080..."
 sudo sed -i 's/listen \[::\]:80 default_server;/listen [::]:8080 default_server;/' /etc/nginx/sites-enabled/default
 sudo sed -i 's/listen 80 default_server;/listen 8080 default_server;/' /etc/nginx/sites-enabled/default
-check_success "Failed to update /etc/nginx/sites-enabled/default"
 
 # Change ownership of necessary files and folders to nginx user
 echo "Changing ownership of Nginx directories..."
 sudo chown -R nginx:nginx /var/log/nginx /var/lib/nginx /etc/nginx
-check_success "Failed to change ownership of Nginx directories"
 
 # Start nginx service
 echo "Starting Nginx service..."
 sudo service nginx start
-check_success "Failed to start Nginx service"
 
-# Verify if nginx is running as nginx user
-echo "Verifying Nginx processes are running as nginx user..."
-pgrep -u nginx -f 'nginx: master process' > /dev/null
-check_success "Nginx master process is not running"
-pgrep -u nginx -f 'nginx: worker process' > /dev/null
-check_success "Nginx worker process is not running"
+# Wait for Nginx to start
+sleep 3
 
-# Verify if nginx is listening on port 8080
-echo "Verifying Nginx is listening on port 8080..."
-if nc -z 127.0.0.1 8080; then
-    echo "Nginx is listening on port 8080"
-else
-    echo "Nginx is not listening on port 8080"
-    exit 1
-fi
+# Check if Nginx processes are running
+check_process "nginx: master process"
+check_process "nginx: worker process"
+
+# Check if Nginx is listening on port 8080
+check_port 8080
 
 echo "Nginx configuration and setup completed successfully."
