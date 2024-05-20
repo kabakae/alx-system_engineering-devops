@@ -18,20 +18,24 @@ def fetch_employee_data(employee_id):
     base_url = 'https://jsonplaceholder.typicode.com'
 
     # Get employee information
-    employee_url = f'{base_url}/users/{employee_id}'
-    employee_response = requests.get(employee_url)
-    if employee_response.status_code != 200:
-        print(f"Failed to fetch data for employee ID {employee_id}")
+    try:
+        employee_url = f'{base_url}/users/{employee_id}'
+        employee_response = requests.get(employee_url)
+        employee_response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Failed to fetch data for employee ID {employee_id}: {e}")
         return
 
     employee_data = employee_response.json()
-    employee_name = employee_data.get('name')
+    employee_name = employee_data.get('name', 'Unknown')
 
     # Get employee's TODO list
-    todos_url = f'{base_url}/todos?userId={employee_id}'
-    todos_response = requests.get(todos_url)
-    if todos_response.status_code != 200:
-        print(f"Failed to fetch TODO list for employee ID {employee_id}")
+    try:
+        todos_url = f'{base_url}/todos'
+        todos_response = requests.get(todos_url, params={'userId': employee_id})
+        todos_response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Failed to fetch TODO list for employee ID {employee_id}: {e}")
         return
 
     todos_data = todos_response.json()
@@ -44,6 +48,8 @@ def fetch_employee_data(employee_id):
     # Display the employee's TODO list progress
     print(f"Employee {employee_name} is done with tasks({number_of_done_tasks}/{total_tasks}):")
     for task in done_tasks:
+        print(f"\t {task.get('title')}")
+    for task in todos_data:
         print(f"\t {task.get('title')}")
 
 
