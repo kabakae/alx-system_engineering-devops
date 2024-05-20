@@ -2,7 +2,7 @@
 """
 my_script.py
 
-This script demonstrates the required coding standards for a simple Python project.
+This script demonstrates the required coding standards for a simple Python 
 It includes a function that prints a message from a predefined dictionary.
 
 Functions:
