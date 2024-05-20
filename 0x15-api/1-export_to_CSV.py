@@ -1,0 +1,69 @@
+#!/usr/bin/python3
+"""
+This module fetches TODO list progress for a given employee ID
+using a REST API and exports the data to a CSV file.
+"""
+
+import csv
+import requests
+import sys
+
+
+def fetch_employee_data(employee_id):
+    """
+    Fetch and display employee TODO list progress.
+
+    Args:
+        employee_id (int): The ID of the employee.
+    """
+    base_url = 'https://jsonplaceholder.typicode.com'
+
+    # Get employee information
+    try:
+        employee_url = f'{base_url}/users/{employee_id}'
+        employee_response = requests.get(employee_url)
+        employee_response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Failed to fetch data for employee ID {employee_id}: {e}")
+        return
+
+    employee_data = employee_response.json()
+    employee_name = employee_data.get('username', 'Unknown')
+
+    # Get employee's TODO list
+    try:
+        todos_url = f'{base_url}/todos'
+        todos_response = requests.get(
+            todos_url, params={'userId': employee_id})
+        todos_response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Failed to fetch TODO list for employee ID {employee_id}: {e}")
+        return
+
+    todos_data = todos_response.json()
+
+    # Write data to CSV file
+    csv_filename = f"{employee_id}.csv"
+    with open(csv_filename, mode='w', newline='') as csv_file:
+        writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+        for task in todos_data:
+            writer.writerow([
+                employee_id,
+                employee_name,
+                task.get('completed'),
+                task.get('title')
+            ])
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: python3 1-export_to_CSV.py EMPLOYEE_ID")
+        sys.exit(1)
+
+    try:
+        employee_id = int(sys.argv[1])
+    except ValueError:
+        print("Employee ID must be an integer")
+        sys.exit(1)
+
+    fetch_employee_data(employee_id)
