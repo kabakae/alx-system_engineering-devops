@@ -35,3 +35,27 @@ def fetch_employee_data(employee_id):
         return
 
     todos_data = todos_response.json()
+
+    # Calculate the number of completed and total tasks
+    total_tasks = len(todos_data)
+    done_tasks = [task for task in todos_data if task.get('completed')]
+    number_of_done_tasks = len(done_tasks)
+
+    # Display the employee's TODO list progress
+    print(f"Employee {employee_name} is done with tasks({number_of_done_tasks}/{total_tasks}):")
+    for task in done_tasks:
+        print(f"\t {task.get('title')}")
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: python3 0-gather_data_from_an_API.py EMPLOYEE_ID")
+        sys.exit(1)
+
+    try:
+        employee_id = int(sys.argv[1])
+    except ValueError:
+        print("Employee ID must be an integer")
+        sys.exit(1)
+
+    fetch_employee_data(employee_id)
