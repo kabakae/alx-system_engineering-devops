@@ -2,11 +2,11 @@
 """
 my_script.py
 
-This script demonstrates the required coding standards for a simple Python
+This script demonstrates the requiards for a simple Python project.
 It includes a function that prints a message from a predefined dictionary.
 
 Functions:
-- main(): The main function that retrieves and prints a message.
+- main(): The main function that retrieves and prints messages for all users.
 """
 
 import os
@@ -15,17 +15,20 @@ import sys
 
 def main():
     """
-    Main function to print a message from a dictionary.
-    Retrieves a message using a key and prints it. Defaults to a
+    Main function to print messages for all users.
+    Retrieves messages using keys and prints them. Defaults to a
     fallback message if the key is not found.
     """
     messages = {
-        "greeting": "Hello, World!",
-        "farewell": "Goodbye, World!"
+        "user1": "Hello, Alice!",
+        "user2": "Hello, Bob!",
+        "user3": "Hello, Charlie!"
     }
 
-    message_key = "greeting"
-    print(messages.get(message_key, "No message found"))
+    users = ["user1", "user2", "user3", "user4"]
+
+    for user in users:
+        print(messages.get(user, f"No message found for {user}"))
 
 
 if __name__ == "__main__":
