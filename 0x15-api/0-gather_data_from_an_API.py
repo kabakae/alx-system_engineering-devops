@@ -35,6 +35,3 @@ def fetch_employee_data(employee_id):
         return
 
     todos_data = todos_response.json()
-
-   
-
