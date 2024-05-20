@@ -32,7 +32,8 @@ def fetch_employee_data(employee_id):
     # Get employee's TODO list
     try:
         todos_url = f'{base_url}/todos'
-        todos_response = requests.get(todos_url, params={'userId': employee_id})
+        todos_response = requests.get(todos_url,
+                                      params={'userId': employee_id})
         todos_response.raise_for_status()
     except requests.RequestException as e:
         print(f"Failed to fetch TODO list for employee ID {employee_id}: {e}")
@@ -46,7 +47,8 @@ def fetch_employee_data(employee_id):
     number_of_done_tasks = len(done_tasks)
 
     # Display the employee's TODO list progress
-    print(f"Employee {employee_name} is done with tasks({number_of_done_tasks}/{total_tasks}):")
+    print(f"Employee {employee_name}
+          is done with tasks({number_of_done_tasks}/{total_tasks}): ")
     for task in done_tasks:
         print(f"\t {task.get('title')}")
     for task in todos_data:
