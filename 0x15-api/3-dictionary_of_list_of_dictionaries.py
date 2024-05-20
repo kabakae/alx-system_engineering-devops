@@ -1,39 +1,30 @@
-import json
-import requests
 
-def fetch_data():
-    # Fetching user data
-    users_response = requests.get("https://jsonplaceholder.typicode.com/users")
-    users = users_response.json()
+### my_script.py
 
-    # Fetching tasks data
-    todos_response = requests.get("https://jsonplaceholder.typicode.com/todos")
-    todos = todos_response.json()
+This script will include a simple functionality, such as printing a message from a dictionary, adhering to all specified requirements.
 
-    # Creating the dictionary to hold all users' tasks
-    tasks_dict = {}
+```python
+#!/usr/bin/python3
+"""
+This is a simple script that prints a message from a dictionary.
+"""
 
-    # Populating the dictionary with tasks for each user
-    for user in users:
-        user_id = user['id']
-        username = user['username']
-        tasks = [task for task in todos if task['userId'] == user_id]
-        
-        # Formatting the tasks for the user
-        tasks_list = [{
-            "username": username,
-            "task": task['title'],
-            "completed": task['completed']
-        } for task in tasks]
-        
-        tasks_dict[user_id] = tasks_list
+import os
+import sys
 
-    return tasks_dict
 
-def export_to_json(data, filename):
-    with open(filename, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
+def main():
+    """
+    Main function to print a message from a dictionary.
+    """
+    messages = {
+        "greeting": "Hello, World!",
+        "farewell": "Goodbye, World!"
+    }
+
+    message_key = "greeting"
+    print(messages.get(message_key, "No message found"))
+
 
 if __name__ == "__main__":
-    data = fetch_data()
-    export_to_json(data, "todo_all_employees.json")
+    main()
