@@ -1,12 +1,12 @@
-
-### my_script.py
-
-This script will include a simple functionality, such as printing a message from a dictionary, adhering to all specified requirements.
-
-```python
 #!/usr/bin/python3
 """
-This is a simple script that prints a message from a dictionary.
+my_script.py
+
+This script demonstrates the required coding standards for a simple Python project.
+It includes a function that prints a message from a predefined dictionary.
+
+Functions:
+- main(): The main function that retrieves and prints a message.
 """
 
 import os
@@ -16,6 +16,8 @@ import sys
 def main():
     """
     Main function to print a message from a dictionary.
+    Retrieves a message using a key and prints it. Defaults to a
+    fallback message if the key is not found.
     """
     messages = {
         "greeting": "Hello, World!",
