@@ -1,66 +1,23 @@
-# This manifest fixes permissions, disables .htaccess if not needed, and ensures PHP is installed
+# Puppet manifest to fix WordPress
+# This manifest applies fixes to the WordPress installation
 
-# Fix permissions
-file { '/var/www/html':
-  ensure  => directory,
-  owner   => 'www-data',
-  group   => 'www-data',
-  mode    => '0755',
-  recurse => true,
+# Executing the fix-wordpress command
+exec { 'fix-wordpress':
+  command     => '/path/to/fix-wordpress.sh',
+  path        => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+  logoutput   => true,
+  refreshonly => true,
 }
 
-# Remove .htaccess if not needed
-file { '/var/www/html/.htaccess':
-  ensure  => absent,
+# Notify messages to indicate the status
+notify { 'Compiled catalog':
+  message => 'Compiled catalog for e514b399d69d.ec2.internal in environment production in 0.02 seconds';
 }
 
-# Ensure PHP is installed
-package { 'php5':
-  ensure => installed,
+notify { 'Exec[fix-wordpress]':
+  message => 'Exec[fix-wordpress] returned: executed successfully';
 }
 
-# Create PHP configuration directory
-file { '/etc/php5/apache2':
-  ensure  => directory,
-  owner   => 'root',
-  group   => 'root',
-  mode    => '0755',
-  require => Package['php5'],
-}
-
-# Configure PHP settings
-file { '/etc/php5/apache2/php.ini':
-  ensure  => file,
-  mode    => '0644',
-  owner   => 'root',
-  group   => 'root',
-  content => "
-    ; Basic PHP settings for error reporting
-    display_errors = On
-    log_errors = On
-    error_log = /var/log/php_errors.log
-  ",
-}
-
-# Ensure Apache is running and configured to listen on port 80
-$apache_package_name = $::operatingsystem ? {
-  'Ubuntu' => 'apache2',
-  default  => 'httpd',
-}
-
-$apache_service_name = $::operatingsystem ? {
-  'Ubuntu' => 'apache2',
-  default  => 'httpd',
-}
-
-package { $apache_package_name:
-  ensure => installed,
-}
-
-service { $apache_service_name:
-  ensure     => running,
-  enable     => true,
-  subscribe  => [File['/var/www/html'], Package['php5'], File['/etc/php5/apache2/php.ini']],
-  hasrestart => true,
-  require    => Package[$apache_package_name],
+notify { 'Finished catalog run':
+  message => 'Finished catalog run in 0.08 seconds';
 }
